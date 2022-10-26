@@ -22,8 +22,8 @@ defmodule RustlerGithub.MixProject do
   defp deps do
     [
       {:rustler, "~> 0.26", optional: true},
-      {:castore, "~> 0.1"},
-      {:jason, "~> 1.4.0"}
+      {:httpoison, "~> 1.8.2"},
+      {:neuron, "~> 5.0.0"}
     ]
   end
 end

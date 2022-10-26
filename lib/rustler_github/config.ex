@@ -4,13 +4,11 @@ defmodule RustlerGithub.Config do
   # This is an internal struct to represent valid config options.
   defstruct [
     :otp_app,
-    :module,
-    :org,
+    :owner,
     :repo,
     :version,
     :crate,
     :load_from,
-    :base_cache_dir,
     :force_build?,
     :format,
     :token
@@ -19,15 +17,13 @@ defmodule RustlerGithub.Config do
   def new(opts) do
     %__MODULE__{
       otp_app: Keyword.fetch!(opts, :otp_app),
-      org: Keyword.fetch!(opts, :org),
+      owner: Keyword.fetch!(opts, :owner),
       repo: Keyword.fetch!(opts, :repo),
-      module: Keyword.fetch!(opts, :module),
       version: Keyword.fetch!(opts, :version),
-      force_build?: Keyword.fetch!(opts, :force_build),
-      crate: opts[:crate],
+      crate: Keyword.fetch!(opts, :crate),
       load_from: opts[:load_from],
-      base_cache_dir: opts[:base_cache_dir],
-      format: opts[:format],
+      force_build?: Keyword.fetch!(opts, :force_build),
+      format: Keyword.get(opts, :format, "{name}-v{version}-{target}"),
       token: opts[:token]
     }
   end
