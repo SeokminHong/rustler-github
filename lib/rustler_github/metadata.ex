@@ -10,7 +10,7 @@ defmodule RustlerGithub.Metadata do
 
   def build(%Config{} = config) do
     target = RustlerGithub.Arch.target()
-    lib_name = format(config.format, target, config.crate, config.version)
+    lib_name = format(config.format, target, config.crate, config.tag)
 
     file_name = lib_name_with_ext(target, lib_name)
 
@@ -50,10 +50,10 @@ defmodule RustlerGithub.Metadata do
     Map.equal?(metadata, existing)
   end
 
-  defp format(fmt, target, name, version) do
+  defp format(fmt, target, name, tag) do
     fmt
     |> String.replace("{name}", lib_prefix(target) <> name)
-    |> String.replace("{version}", version)
+    |> String.replace("{tag}", tag)
     |> String.replace("{target}", target)
   end
 

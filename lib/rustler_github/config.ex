@@ -6,7 +6,7 @@ defmodule RustlerGithub.Config do
     :otp_app,
     :owner,
     :repo,
-    :version,
+    :tag,
     :crate,
     :load_from,
     :force_build?,
@@ -20,11 +20,11 @@ defmodule RustlerGithub.Config do
       otp_app: Keyword.fetch!(opts, :otp_app),
       owner: Keyword.fetch!(opts, :owner),
       repo: Keyword.fetch!(opts, :repo),
-      version: Keyword.fetch!(opts, :version),
+      tag: Keyword.fetch!(opts, :tag),
       crate: Keyword.fetch!(opts, :crate),
       load_from: opts[:load_from],
       force_build?: Keyword.fetch!(opts, :force_build),
-      format: Keyword.get(opts, :format, "{name}-v{version}-{target}"),
+      format: Keyword.get(opts, :format, "{name}-v{tag}-{target}"),
       token: opts[:token],
       ext: Keyword.get(opts, :ext, "tgz")
     }
