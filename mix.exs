@@ -14,7 +14,7 @@ defmodule RustlerGithub.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger, :inets, :public_key]
     ]
   end
 
@@ -22,8 +22,8 @@ defmodule RustlerGithub.MixProject do
   defp deps do
     [
       {:rustler, "~> 0.26", optional: true},
-      {:httpoison, "~> 1.8.2"},
-      {:neuron, "~> 5.0.0"}
+      {:castore, "~> 0.1"},
+      {:jason, "~> 1.4.0"}
     ]
   end
 end

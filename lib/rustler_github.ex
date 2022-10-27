@@ -1,6 +1,6 @@
 defmodule RustlerGithub do
   require Logger
-  alias RustlerGithub.{Config, Metadata}
+  alias RustlerGithub.{Config, Http, Metadata}
 
   @native_dir "priv/native"
 
@@ -28,23 +28,23 @@ defmodule RustlerGithub do
         Keyword.put_new(
           opts,
           :force_build,
-          Application.compile_env(:rustler_precompiled, [:force_build, otp_app])
+          Application.compile_env(:rustler_github, [:force_build, otp_app])
         )
 
-      case RustlerPrecompiled.init(__MODULE__, opts) do
+      case RustlerGithub.init(__MODULE__, opts) do
         {:force_build, only_rustler_opts} ->
           unquote(force)
 
         {:ok, config} ->
-          @on_load :load_rustler_precompiled
-          @rustler_precompiled_load_from config.load_from
+          @on_load :load_rustler_github
+          @rustler_github_load_from config.load_from
 
           @doc false
-          def load_rustler_precompiled do
+          def load_rustler_github do
             # Remove any old modules that may be loaded so we don't get
             # {:error, {:upgrade, 'Upgrade not supported by this NIF library.'}}
             :code.purge(__MODULE__)
-            {otp_app, path} = @rustler_precompiled_load_from
+            {otp_app, path} = @rustler_github_load_from
 
             load_path =
               otp_app
@@ -128,50 +128,44 @@ defmodule RustlerGithub do
 
   defp download_release(%Config{} = config, %Metadata{} = metadata) do
     with {:ok,
-          %Neuron.Response{
-            body: %{
-              "data" => %{
-                "repository" => %{
-                  "release" => %{
-                    "releaseAssets" => %{
-                      "nodes" => assets
-                    }
+          %{
+            "data" => %{
+              "repository" => %{
+                "release" => %{
+                  "releaseAssets" => %{
+                    "nodes" => assets
                   }
                 }
               }
             }
           }} <- get_assets(config),
-         %{"downloadUrl" => download_url} <-
+         %{"url" => url} <-
            Enum.find(assets, fn %{"name" => name} ->
-             name == metadata.file_name
+             name == "#{metadata.file_name}.#{config.ext}"
            end),
-         {:ok,
-          %HTTPoison.Response{
-            body: body
-          }} = HTTPoison.get(download_url) do
+         {:ok, body} <- Http.get_file(url) do
       {:ok, body}
     end
   end
 
   defp get_assets(%Config{} = config) do
-    Neuron.query(
+    Http.query(
+      "https://api.github.com/graphql",
       """
-      query getUrl($owner: String!, $name: String!, $version: String!) {
-        repository(owner: $owner, name: $name) {
-          release(tagName: $version) {
+      query getUrl {
+        repository(owner: "#{config.owner}", name: "#{config.repo}") {
+          release(tagName: "#{config.version}") {
             releaseAssets(first: 100) {
               nodes {
                 name
-                downloadUrl
+                url
               }
             }
           }
         }
       }
       """,
-      %{owner: config.owner, name: config.repo, version: config.version},
-      url: "https://api.github.com/graphql",
-      headers: [{"Authorization", "Bearer #{config.token}"}, {"User-Agent", "Neuron"}]
+      config.token
     )
   end
 end
