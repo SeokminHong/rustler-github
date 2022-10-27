@@ -44,6 +44,12 @@ defmodule RustlerGithub.Metadata do
     :ok
   end
 
+  def up_to_date(nif_module, %__MODULE__{} = metadata) do
+    existing = read(nif_module)
+
+    Map.equal?(metadata, existing)
+  end
+
   defp format(fmt, target, name, version) do
     fmt
     |> String.replace("{name}", lib_prefix(target) <> name)

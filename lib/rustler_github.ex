@@ -1,6 +1,6 @@
 defmodule RustlerGithub do
   require Logger
-  alias RustlerGithub.{Config, Checksum, Metadata}
+  alias RustlerGithub.{Config, Metadata}
 
   @native_dir "priv/native"
 
@@ -63,6 +63,7 @@ defmodule RustlerGithub do
   def init(module, opts) do
     config = Config.new(opts)
     metadata = Metadata.build(config)
+    Metadata.write!(module, metadata)
 
     if config.force_build? do
       rustler_opts =
@@ -100,13 +101,12 @@ defmodule RustlerGithub do
       load_from: {name, Path.join("priv/native", lib_name)}
     }
 
-    if File.exists?(cached_file) do
+    if Metadata.up_to_date(nif_module, metadata) and File.exists?(cached_file) do
       # Remove existing NIF file so we don't have processes using it.
       # See: https://github.com/rusterlium/rustler/blob/46494d261cbedd3c798f584459e42ab7ee6ea1f4/rustler_mix/lib/rustler/compiler.ex#L134
       File.rm(lib_file)
 
-      with :ok <- Checksum.check(cached_file, nif_module),
-           :ok <- :erl_tar.extract(cached_file, [:compressed, cwd: Path.dirname(lib_file)]) do
+      with :ok <- :erl_tar.extract(cached_file, [:compressed, cwd: Path.dirname(lib_file)]) do
         Logger.debug("Copying NIF from cache and extracting to #{lib_file}")
         {:ok, result}
       end
@@ -117,7 +117,6 @@ defmodule RustlerGithub do
            :ok <- File.mkdir_p(dirname),
            {:ok, tar_gz} <- download_release(config, metadata),
            :ok <- File.write(cached_file, tar_gz),
-           :ok <- Checksum.check(cached_file, nif_module),
            :ok <-
              :erl_tar.extract({:binary, tar_gz}, [:compressed, cwd: Path.dirname(lib_file)]) do
         Logger.debug("NIF cached at #{cached_file} and extracted to #{lib_file}")
