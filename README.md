@@ -1,6 +1,6 @@
 # Rustler GitHub
 
-Download pre-built Rustler binaries from GitHub Releases.
+Download pre-built Rustler binaries from GitHub Releases. This codebase is highly based on [Rustler Precompiled](https://github.com/philss/rustler_precompiled).
 
 ## Installation
 
