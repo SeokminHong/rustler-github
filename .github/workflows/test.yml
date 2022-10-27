@@ -1,0 +1,35 @@
+name: Test
+
+on:
+  push:
+
+jobs:
+  precopmiled:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: "25.1"
+          elixir-version: "1.14.0"
+      - run: mix deps.get
+        working-directory: github_test
+      - run: mix test
+        working-directory: github_test
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  force-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: "25.1"
+          elixir-version: "1.14.0"
+      - run: mix deps.get
+        working-directory: github_test
+      - run: mix test
+        working-directory: github_test
+        env:
+          RUSTLER_PRECOMPILED: true
