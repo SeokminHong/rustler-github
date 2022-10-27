@@ -80,12 +80,12 @@ defmodule RustlerGithub.Metadata do
 
   defp cache_dir(sub_dir) do
     cache_opts = if System.get_env("MIX_XDG"), do: %{os: :linux}, else: %{}
-    :filename.basedir(:user_cache, Path.join("rustler_github", sub_dir), cache_opts)
+    env = Mix.env() |> Atom.to_string()
+    :filename.basedir(:user_cache, Path.join(["rustler_github", env, sub_dir]), cache_opts)
   end
 
   defp path(nif_module) when is_atom(nif_module) do
-    env = Mix.env() |> Atom.to_string()
     dir = cache_dir("metadata")
-    Path.join([dir, env, "metadata-#{nif_module}.exs"])
+    Path.join(dir, "metadata-#{nif_module}.exs")
   end
 end

@@ -26,6 +26,7 @@ defmodule RustlerGithub do
 
       case RustlerGithub.init(__MODULE__, opts) do
         {:force_build, only_rustler_opts} ->
+          Logger.debug("Force build from source.")
           unquote(force)
 
         {:ok, config} ->
@@ -57,22 +58,20 @@ defmodule RustlerGithub do
     config = Config.new(opts)
     metadata = Metadata.build(config)
 
-    with false <-
-           config.force_build? &&
-             {:force_build,
-              Keyword.drop(opts, [:owner, :repo, :tag, :force_build?, :format, :ext, :token])},
-         {:error, precomp_error} <-
-           download_or_reuse_nif_file(module, config, metadata) do
-      message = """
-      Error while downloading precompiled NIF: #{precomp_error}.
-      """
+    if config.force_build? do
+      rustler_opts =
+        Keyword.drop(opts, [:owner, :repo, :tag, :force_build?, :format, :ext, :token])
 
-      {:error, message}
+      {:force_build, rustler_opts}
     else
-      ok ->
-        Logger.debug("Writing metadata for #{module}.")
-        Metadata.write!(module, metadata)
-        ok
+      with {:error, precomp_error} <-
+             download_or_reuse_nif_file(module, config, metadata) do
+        message = """
+        Error while downloading precompiled NIF: #{precomp_error}.
+        """
+
+        {:error, message}
+      end
     end
   end
 
@@ -114,6 +113,8 @@ defmodule RustlerGithub do
              :erl_tar.extract({:binary, tar_gz}, [:compressed, cwd: Path.dirname(lib_file)]) do
         Logger.debug("NIF cached at #{cached_file} and extracted to #{lib_file}")
 
+        Logger.debug("Writing metadata for #{nif_module}.")
+        Metadata.write!(nif_module, metadata)
         {:ok, result}
       end
     end
