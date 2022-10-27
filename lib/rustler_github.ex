@@ -24,13 +24,6 @@ defmodule RustlerGithub do
 
       otp_app = Keyword.fetch!(opts, :otp_app)
 
-      opts =
-        Keyword.put_new(
-          opts,
-          :force_build,
-          Application.compile_env(:rustler_github, [:force_build, otp_app])
-        )
-
       case RustlerGithub.init(__MODULE__, opts) do
         {:force_build, only_rustler_opts} ->
           unquote(force)
@@ -63,28 +56,28 @@ defmodule RustlerGithub do
   def init(module, opts) do
     config = Config.new(opts)
     metadata = Metadata.build(config)
-    Metadata.write!(module, metadata)
 
-    if config.force_build? do
-      rustler_opts =
-        Keyword.drop(opts, [:owner, :repo, :tag, :force_build?, :format, :ext, :token])
+    with false <-
+           config.force_build? &&
+             {:force_build,
+              Keyword.drop(opts, [:owner, :repo, :tag, :force_build?, :format, :ext, :token])},
+         {:error, precomp_error} <-
+           download_or_reuse_nif_file(module, config, metadata) do
+      message = """
+      Error while downloading precompiled NIF: #{precomp_error}.
+      """
 
-      {:force_build, rustler_opts}
+      {:error, message}
     else
-      with {:error, precomp_error} <-
-             download_or_reuse_nif_file(module, config, metadata) do
-        message = """
-        Error while downloading precompiled NIF: #{precomp_error}.
-        """
-
-        {:error, message}
-      end
+      ok ->
+        Logger.debug("Writing metadata for #{module}.")
+        Metadata.write!(module, metadata)
+        ok
     end
   end
 
   @doc false
-  def download_or_reuse_nif_file(nif_module, %Config{} = config, %Metadata{} = metadata)
-      when is_map(metadata) do
+  def download_or_reuse_nif_file(nif_module, %Config{} = config, %Metadata{} = metadata) do
     name = config.otp_app
 
     native_dir = Application.app_dir(name, @native_dir)
@@ -145,6 +138,9 @@ defmodule RustlerGithub do
            end),
          {:ok, body} <- Http.get_file(url) do
       {:ok, body}
+    else
+      nil -> {:error, "Cannot find asset #{metadata.file_name}.#{config.ext}"}
+      {:error, error} -> {:error, error}
     end
   end
 

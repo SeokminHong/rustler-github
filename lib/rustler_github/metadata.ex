@@ -5,7 +5,8 @@ defmodule RustlerGithub.Metadata do
     :cached_file,
     :lib_name,
     :file_name,
-    :target
+    :target,
+    :config
   ]
 
   def build(%Config{} = config) do
@@ -20,7 +21,8 @@ defmodule RustlerGithub.Metadata do
       cached_file: cached_file,
       lib_name: lib_name,
       file_name: file_name,
-      target: target
+      target: target,
+      config: Map.take(config, [:otp_app, :crate, :owner, :repo, :tag, :format, :ext])
     }
   end
 
@@ -82,7 +84,8 @@ defmodule RustlerGithub.Metadata do
   end
 
   defp path(nif_module) when is_atom(nif_module) do
+    env = Mix.env() |> Atom.to_string()
     dir = cache_dir("metadata")
-    Path.join(dir, "metadata-#{nif_module}.exs")
+    Path.join([dir, env, "metadata-#{nif_module}.exs"])
   end
 end
