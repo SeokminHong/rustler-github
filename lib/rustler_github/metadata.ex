@@ -14,7 +14,7 @@ defmodule RustlerGithub.Metadata do
 
     file_name = lib_name_with_ext(target, lib_name)
 
-    cached_file = Path.join(cache_dir("precompiled"), "#{file_name}.tgz")
+    cached_file = Path.join(cache_dir("precompiled"), "#{file_name}.#{config.ext}")
 
     %__MODULE__{
       cached_file: cached_file,

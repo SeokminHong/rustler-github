@@ -11,7 +11,8 @@ defmodule RustlerGithub.Config do
     :load_from,
     :force_build?,
     :format,
-    :token
+    :token,
+    :ext
   ]
 
   def new(opts) do
@@ -24,7 +25,8 @@ defmodule RustlerGithub.Config do
       load_from: opts[:load_from],
       force_build?: Keyword.fetch!(opts, :force_build),
       format: Keyword.get(opts, :format, "{name}-v{version}-{target}"),
-      token: opts[:token]
+      token: opts[:token],
+      ext: Keyword.get(opts, :format, "tgz")
     }
   end
 end

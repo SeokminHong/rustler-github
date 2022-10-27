@@ -65,7 +65,8 @@ defmodule RustlerGithub do
     metadata = Metadata.build(config)
 
     if config.force_build? do
-      rustler_opts = Keyword.drop(opts, [:owner, :repo, :version, :force_build?, :format, :token])
+      rustler_opts =
+        Keyword.drop(opts, [:owner, :repo, :version, :force_build?, :format, :ext, :token])
 
       {:force_build, rustler_opts}
     else
