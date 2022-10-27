@@ -1,6 +1,6 @@
-# RustlerGithub
+# Rustler GitHub
 
-**TODO: Add description**
+Download pre-built Rustler binaries from GitHub Releases.
 
 ## Installation
 
@@ -18,4 +18,3 @@ end
 Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
 be found at <https://hexdocs.pm/rustler_github>.
-
