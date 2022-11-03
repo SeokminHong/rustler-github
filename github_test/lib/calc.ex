@@ -8,7 +8,7 @@ defmodule Calc do
     format: "{name}-{target}",
     ext: "tgz",
     token: System.get_env("TOKEN"),
-    force_build?: System.get_env("RUSTLER_PRECOMPILED") in ["1", "true"]
+    force_build?: System.get_env("RUSTLER_FORCE_BUILD") in ["1", "true"]
 
   @spec add(integer(), integer()) :: integer()
   def add(_a, _b), do: error()

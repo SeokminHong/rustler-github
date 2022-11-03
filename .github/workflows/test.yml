@@ -4,6 +4,7 @@ on:
   push:
 
 jobs:
+  # Download from GitHub Releases
   precopmiled:
     runs-on: ubuntu-latest
     steps:
@@ -19,6 +20,7 @@ jobs:
         env:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  # Build from local
   force-build:
     runs-on: ubuntu-latest
     steps:
@@ -32,4 +34,4 @@ jobs:
       - run: mix test
         working-directory: github_test
         env:
-          RUSTLER_PRECOMPILED: true
+          RUSTLER_FORCE_BUILD: true
